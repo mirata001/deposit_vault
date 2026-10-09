@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Vault · Withdrawal Locked</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0b1120 0%, #1a2639 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background: rgba(22, 30, 45, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 2.5rem;
+            padding: 2.5rem 2.2rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 30px 50px -20px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(100, 210, 255, 0.2);
+            box-shadow: 0 35px 55px -22px rgba(0, 180, 255, 0.3);
+        }
+
+        .vault-icon {
+            font-size: 2.8rem;
+            text-align: center;
+            margin-bottom: 0.75rem;
+            filter: drop-shadow(0 0 12px #3f9eff55);
+        }
+
+        h1 {
+            color: #eef5ff;
+            font-weight: 500;
+            font-size: 2rem;
+            letter-spacing: -0.02em;
+            text-align: center;
+            margin-bottom: 0.2rem;
+        }
+
+        .subhead {
+            text-align: center;
+            color: #8f9eb5;
+            font-size: 0.95rem;
+            margin-bottom: 2.2rem;
+            border-bottom: 1px dashed #2d3b52;
+            padding-bottom: 1.2rem;
+            letter-spacing: 0.3px;
+        }
+
+        .balance-panel {
+            background: #111b2b;
+            border-radius: 1.8rem;
+            padding: 1.4rem 1.8rem;
+            margin-bottom: 2rem;
+            border: 1px solid #26344b;
+            box-shadow: inset 0 8px 12px -8px #00000055, 0 4px 8px -4px #00000033;
+        }
+
+        .balance-label {
+            color: #8196b0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+        }
+
+        .balance-amount {
+            color: #ffffff;
+            font-size: 2.6rem;
+            font-weight: 600;
+            line-height: 1.2;
+            display: flex;
+            align-items: baseline;
+            gap: 0.3rem;
+        }
+
+        .balance-amount span {
+            font-size: 1.3rem;
+            color: #7f9bc2;
+            font-weight: 400;
+        }
+
+        .deposit-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: #0e1625;
+            border: 1px solid #293a54;
+            border-radius: 3rem;
+            padding: 0.2rem 0.2rem 0.2rem 1.5rem;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .input-group:focus-within {
+            border-color: #3f9eff;
+            box-shadow: 0 0 0 3px #3f9eff22;
+        }
+
+        .input-group input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.9rem 0.5rem 0.9rem 0;
+            font-size: 1.2rem;
+            color: #eef5ff;
+            outline: none;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input::placeholder {
+            color: #4d617c;
+            font-weight: 400;
+            font-size: 1rem;
+        }
+
+        .input-group button {
+            background: linear-gradient(135deg, #1e7fff, #0055cc);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.9rem 2rem;
+            border-radius: 3rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 14px -6px #1e7fffcc;
+            border: 1px solid #61a5ff55;
+            white-space: nowrap;
+        }
+
+        .input-group button:hover {
+            background: linear-gradient(135deg, #2e8aff, #1060dd);
+            box-shadow: 0 10px 18px -6px #1e7fff;
+            transform: scale(0.98);
+        }
+
+        .input-group button:active {
+            transform: scale(0.96);
+            box-shadow: 0 4px 8px -4px #1e7fff;
+        }
+
+        /* --- Withdraw section (always visible but non-functional) --- */
+        .withdraw-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #253346;
+        }
+
+        .withdraw-label-header {
+            color: #b4c8e2;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-left: 0.2rem;
+        }
+
+        .withdraw-label-header .lock-icon {
+            font-size: 1.2rem;
+            filter: grayscale(0.4);
+        }
+
+        .withdraw-input-group {
+            display: flex;
+            align-items: center;
+            background: #0e1625;
+            border: 1px solid #2e3d54;
+            border-radius: 3rem;
+            padding: 0.2rem 0.2rem 0.2rem 1.5rem;
+            opacity: 0.85;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .withdraw-input-group input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.9rem 0.5rem 0.9rem 0;
+            font-size: 1.2rem;
+            color: #8a9bb5;
+            outline: none;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            cursor: not-allowed;
+        }
+
+        .withdraw-input-group input::placeholder {
+            color: #4d617c;
+            font-weight: 400;
+            font-size: 1rem;
+        }
+
+        .withdraw-input-group button {
+            background: #2a3548;
+            border: 1px solid #3a4a62;
+            color: #7c8ea8;
+            font-weight: 600;
+            padding: 0.9rem 2rem;
+            border-radius: 3rem;
+            font-size: 1rem;
+            cursor: not-allowed;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            box-shadow: none;
+        }
+
+        .withdraw-input-group button:hover {
+            background: #2a3548;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .withdraw-note {
+            color: #8098b5;
+            font-size: 0.78rem;
+            padding-left: 1.8rem;
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .withdraw-note .tiny-lock {
+            font-size: 0.9rem;
+        }
+
+        .note {
+            text-align: center;
+            color: #5c6f88;
+            font-size: 0.75rem;
+            margin-top: 1.5rem;
+            letter-spacing: 0.3px;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .note span {
+            background: #0d1522;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            border: 1px solid #1e2a3c;
+        }
+
+        .error-msg {
+            color: #ff8080;
+            font-size: 0.85rem;
+            padding-left: 1.8rem;
+            min-height: 1.4rem;
+            margin-top: 0.2rem;
+        }
+
+        .footer {
+            margin-top: 1.8rem;
+            border-top: 1px solid #1d2a3c;
+            padding-top: 1.2rem;
+            text-align: center;
+            color: #4f6380;
+            font-size: 0.8rem;
+        }
+
+        /* Toast for withdraw attempt */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #1f2a3a;
+            color: #d0ddea;
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            border: 1px solid #3d4f68;
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: 0 12px 25px -8px #000000cc;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast .toast-icon {
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="vault-icon">🏦</div>
+        <h1>Deposit Vault</h1>
+        <div class="subhead">Funds are locked · deposit only</div>
+
+        <!-- Balance display -->
+        <div class="balance-panel">
+            <div class="balance-label">Current balance</div>
+            <div class="balance-amount" id="balanceDisplay">
+                $0.00 <span>USD</span>
+            </div>
+        </div>
+
+        <!-- Deposit form -->
+        <div class="deposit-section">
+            <div class="input-group">
+                <input type="number" id="depositInput" placeholder="0.00" min="0.01" step="0.01" value="50.00">
+                <button id="depositBtn">Deposit</button>
+            </div>
+            <div id="depositError" class="error-msg"></div>
+        </div>
+
+        <!-- Withdraw section (visible to everyone, but non-functional) -->
+        <div class="withdraw-section">
+            <div class="withdraw-label-header">
+                <span class="lock-icon">🔒</span> Withdraw
+            </div>
+            <div class="withdraw-input-group" id="withdrawInputGroup">
+                <input type="number" id="withdrawInput" placeholder="0.00" disabled readonly>
+                <button id="withdrawBtn" disabled>Withdraw</button>
+            </div>
+            <div id="withdrawError" class="error-msg"></div>
+            <div class="withdraw-note">
+                <span class="tiny-lock">🔒</span> Withdrawals are temporarily disabled. Contact support.
+            </div>
+        </div>
+
+        <div class="note">
+            <span>deposits only</span>
+            <span>withdrawals locked</span>
+        </div>
+        <div class="footer">
+            ⚡ All deposits are final and non-refundable
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">
+        <span class="toast-icon">⚠️</span>
+        <span id="toastMessage">Withdrawals are disabled</span>
+    </div>
+
+    <script>
+        (function() {
+            // --- State ---
+            let balance = 0.00;
+
+            // --- DOM elements ---
+            const balanceDisplay = document.getElementById('balanceDisplay');
+            const depositInput = document.getElementById('depositInput');
+            const depositBtn = document.getElementById('depositBtn');
+            const depositError = document.getElementById('depositError');
+
+            const withdrawInput = document.getElementById('withdrawInput');
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            const withdrawError = document.getElementById('withdrawError');
+            const withdrawInputGroup = document.getElementById('withdrawInputGroup');
+
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+
+            // --- Helper: update balance UI ---
+            function updateBalanceUI() {
+                const formatted = balance.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                balanceDisplay.innerHTML = `$${formatted} <span>USD</span>`;
+            }
+
+            // --- Clear errors ---
+            function clearDepositError() { depositError.textContent = ''; }
+            function clearWithdrawError() { withdrawError.textContent = ''; }
+
+            // --- Show errors ---
+            function showDepositError(msg) { depositError.textContent = msg; }
+            function showWithdrawError(msg) { withdrawError.textContent = msg; }
+
+            // --- Toast ---
+            let toastTimeout;
+            function showToast(message) {
+                toastMessage.textContent = message;
+                toast.classList.add('show');
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2800);
+            }
+
+            // --- Deposit handler ---
+            function handleDeposit() {
+                clearDepositError();
+                const rawValue = depositInput.value.trim();
+                if (rawValue === '') {
+                    showDepositError('Please enter an amount');
+                    return;
+                }
+                const amount = parseFloat(rawValue);
+                if (isNaN(amount) || !isFinite(amount)) {
+                    showDepositError('Please enter a valid number');
+                    return;
+                }
+                if (amount <= 0) {
+                    showDepositError('Deposit amount must be greater than zero');
+                    return;
+                }
+                if (amount > 1_000_000_000) {
+                    showDepositError('Amount exceeds maximum deposit limit');
+                    return;
+                }
+                // Use integer cents to avoid floating point issues
+                const currentCents = Math.round(balance * 100);
+                const depositCents = Math.round(amount * 100);
+                const newCents = currentCents + depositCents;
+                balance = newCents / 100;
+                updateBalanceUI();
+                depositInput.value = '';
+                depositInput.placeholder = '0.00';
+                depositInput.focus();
+            }
+
+            // --- Withdraw handler (always blocked) ---
+            function handleWithdraw() {
+                // This function should never be called because the button is disabled,
+                // but we add a safety net anyway.
+                clearWithdrawError();
+                showWithdrawError('Withdrawals are disabled');
+                showToast('🔒 Withdrawals are currently disabled');
+            }
+
+            // --- Extra safety: block all interactions on the withdraw group ---
+            function blockWithdrawInteraction(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showToast('🔒 Withdrawals are currently disabled');
+                return false;
+            }
+
+            // --- Event listeners ---
+            depositBtn.addEventListener('click', handleDeposit);
+            depositInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleDeposit();
+                }
+            });
+            depositInput.addEventListener('input', clearDepositError);
+
+            // Withdraw button: disabled, but add a click listener just in case
+            withdrawBtn.addEventListener('click', handleWithdraw);
+
+            // Block all mouse interactions on the withdraw input group
+            withdrawInputGroup.addEventListener('click', blockWithdrawInteraction);
+            withdrawInputGroup.addEventListener('mousedown', blockWithdrawInteraction);
+
+            // Also block keyboard focus and input
+            withdrawInput.addEventListener('keydown', (e) => {
+                e.preventDefault();
+                showToast('🔒 Withdrawals are currently disabled');
+                return false;
+            });
+            withdrawInput.addEventListener('focus', (e) => {
+                e.target.blur();
+                showToast('🔒 Withdrawals are currently disabled');
+            });
+
+            // Clear withdraw error when deposit is made (to avoid stale messages)
+            depositBtn.addEventListener('click', clearWithdrawError);
+
+            // --- Initialize ---
+            updateBalanceUI();
+            depositInput.value = '50.00';
+
+            // Ensure withdraw input is disabled and readonly
+            withdrawInput.disabled = true;
+            withdrawInput.readOnly = true;
+            withdrawBtn.disabled = true;
+            withdrawBtn.style.cursor = 'not-allowed';
+            withdrawInput.style.cursor = 'not-allowed';
+
+            // Prevent form submission on enter in number inputs
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Extra: prevent context menu on withdraw group (optional)
+            withdrawInputGroup.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showToast('🔒 Withdrawals are currently disabled');
+            });
+        })();
+    </script>
+</body>
+</html>
